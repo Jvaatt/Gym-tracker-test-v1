@@ -118,7 +118,7 @@ hr.dim{border:none;border-top:0.5px solid var(--bdr);margin:10px 0}
 </div>
 
 <script>
-// ─── DATA ────────────────────────────────────────────────────────────────────
+//── DATA ────────────────────────────────────────────────────────────────────
 const MUSCLES = ["Chest","Back","Shoulders","Biceps","Triceps","Quads","Hamstrings","Glutes","Calves","Core","Forearms","Traps","Full Body"];
 
 const EXERCISE_DB = [
@@ -289,7 +289,7 @@ const DEFAULT_PROGRAM = {
   ]
 };
 
-// ─── STATE ───────────────────────────────────────────────────────────────────
+//── STATE ───────────────────────────────────────────────────────────────────
 let lang = "en";
 let view = "log";
 let programs = [JSON.parse(JSON.stringify(DEFAULT_PROGRAM))];
@@ -304,7 +304,7 @@ let editModalTarget = null;   // {progId, dayId, exIdx}
 let muscleFilter = "All";
 let editingProgram = null;
 
-// ─── TRANSLATIONS ─────────────────────────────────────────────────────────────
+//── TRANSLATIONS ─────────────────────────────────────────────────────────────
 const T = {
   en:{
     log:"Log",guide:"Guide",programs:"Programs",
@@ -389,7 +389,7 @@ const T = {
 };
 const t = () => T[lang];
 
-// ─── STORAGE ─────────────────────────────────────────────────────────────────
+//── STORAGE ─────────────────────────────────────────────────────────────────
 const LS = {
   get:(k)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):null}catch{return null}},
   set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}},
@@ -414,7 +414,7 @@ function saveAll() {
   LS.set("gymtracker_v4", { lang, programs, activeProgId, activeDayId, history });
 }
 
-// ─── LOG DATA ─────────────────────────────────────────────────────────────────
+//── LOG DATA ─────────────────────────────────────────────────────────────────
 function todayStr() { return new Date().toISOString().slice(0,10); }
 function logKey(progId, dayId) { return `gymlog_v4_${progId}_${dayId}_${todayStr()}`; }
 
@@ -436,7 +436,7 @@ function saveHistory(progId, dayId, exId, entry) {
   saveAll();
 }
 
-// ─── HELPERS ─────────────────────────────────────────────────────────────────
+//── HELPERS ─────────────────────────────────────────────────────────────────
 function uid() { return Math.random().toString(36).slice(2,9); }
 function activeProgram() { return programs.find(p => p.id === activeProgId) || programs[0]; }
 function activeDay() { const p = activeProgram(); return p?.days?.find(d => d.id === activeDayId) || p?.days?.[0]; }
@@ -460,7 +460,7 @@ function toast(msg) {
   setTimeout(() => el.style.opacity = "0", 2000);
 }
 
-// ─── VIEWS ───────────────────────────────────────────────────────────────────
+//── VIEWS ───────────────────────────────────────────────────────────────────
 function showView(v) {
   view = v;
   document.querySelectorAll(".nav-tab").forEach(el => el.classList.remove("active"));
@@ -475,7 +475,7 @@ function toggleLang() {
   render();
 }
 
-// ─── RENDER ──────────────────────────────────────────────────────────────────
+//── RENDER ──────────────────────────────────────────────────────────────────
 function render() {
   const main = document.getElementById("main");
   // Update nav labels
@@ -490,7 +490,7 @@ function render() {
   attachEventListeners();
 }
 
-// ─── LOG VIEW ─────────────────────────────────────────────────────────────────
+//── LOG VIEW ─────────────────────────────────────────────────────────────────
 function renderLog() {
   const prog = activeProgram();
   const day = activeDay();
@@ -626,7 +626,7 @@ function renderLog() {
   return html;
 }
 
-// ─── GUIDE VIEW ───────────────────────────────────────────────────────────────
+//── GUIDE VIEW ───────────────────────────────────────────────────────────────
 function renderGuide() {
   const tx = t();
   return `
@@ -665,7 +665,7 @@ function renderGuide() {
   </div>`;
 }
 
-// ─── PROGRAMS VIEW ─────────────────────────────────────────────────────────────
+//── PROGRAMS VIEW ─────────────────────────────────────────────────────────────
 function renderPrograms() {
   const tx = t();
   let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
@@ -712,7 +712,7 @@ function renderPrograms() {
   return html;
 }
 
-// ─── PROGRAM EDITOR ────────────────────────────────────────────────────────────
+//── PROGRAM EDITOR ────────────────────────────────────────────────────────────
 function newProgram() {
   editingProgram = { id: uid(), name: "", days: [] };
   renderProgramEditor();
@@ -798,7 +798,7 @@ function saveEditor() {
   render();
 }
 
-// ─── EXERCISE SEARCH MODAL ────────────────────────────────────────────────────
+//── EXERCISE SEARCH MODAL ────────────────────────────────────────────────────
 let searchModalContext = null; // {mode:"editor"|"log", dayIdx, progId, dayId}
 
 function openSearchModal(mode, dayIdx, progId, dayId) {
@@ -872,7 +872,7 @@ function addCustomEx() {
   }
 }
 
-// ─── LOG ACTIONS ──────────────────────────────────────────────────────────────
+//── LOG ACTIONS ──────────────────────────────────────────────────────────────
 function selectProg(id) {
   activeProgId = id;
   const prog = programs.find(p => p.id === id);
@@ -960,7 +960,7 @@ function resetDay() {
   render();
 }
 
-// ─── PROGRAM ACTIONS ──────────────────────────────────────────────────────────
+//── PROGRAM ACTIONS ──────────────────────────────────────────────────────────
 function deleteProg(id) {
   if (!confirm(t().cancel + "?")) return;
   programs = programs.filter(p => p.id !== id);
@@ -969,7 +969,7 @@ function deleteProg(id) {
   render();
 }
 
-// ─── IMPORT / EXPORT ──────────────────────────────────────────────────────────
+//── IMPORT / EXPORT ──────────────────────────────────────────────────────────
 function copyExport() {
   const exportData = JSON.stringify({programs:programs.filter(p=>p.id!=="default"),history,v:4});
   navigator.clipboard?.writeText(exportData).then(() => {
@@ -991,12 +991,12 @@ function doImport() {
     saveAll();
     if (msg) { msg.style.color = "var(--ok)"; msg.textContent = t().importOk; }
     render();
-  } catch {
+  } catch(e) {
     if (msg) { msg.style.color = "var(--red)"; msg.textContent = t().importErr; }
   }
 }
 
-// ─── MISC ────────────────────────────────────────────────────────────────────
+//── MISC ────────────────────────────────────────────────────────────────────
 function esc(str) {
   if (!str) return "";
   return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
@@ -1006,9 +1006,16 @@ function attachEventListeners() {
   // Input events are inline in HTML, nothing extra needed
 }
 
-// ─── BOOT ────────────────────────────────────────────────────────────────────
-loadAll();
-render();
+// BOOT
+try {
+  loadAll();
+  render();
+} catch(bootErr) {
+  document.getElementById("main").innerHTML =
+    '<div style="color:#E8743B;padding:20px;font-size:13px;background:#1D2024;border-radius:10px;margin-top:20px">' +
+    '<strong>Error (screenshot this):</strong><br/><br/>' +
+    bootErr.toString() + '<br/><br/>' + (bootErr.stack||"") + '</div>';
+}
 </script>
 </body>
 </html>
