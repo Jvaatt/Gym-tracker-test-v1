@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="theme-color" content="#15171A"/>
+<title>Gym Tracker</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#15171A;--bgR:#1D2024;--bgS:#101113;--bdr:#2C2F34;
+  --acc:#E8743B;--accBg:#3A2A20;--accTx:#F4A876;
+  --tx:#EDEAE3;--txS:#9C9A93;--txT:#6E6D68;
+  --ok:#5FA777;--okBg:#1F2B23;--warn:#D9A441;--warnBg:#332B18;
+  --inf:#5B9BD5;--red:#D05252;--redBg:#2D1717;
+  --r:10px;--rSm:7px;
+}
+body{background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;padding-bottom:80px}
+input,textarea,select{background:var(--bgS);border:0.5px solid var(--bdr);border-radius:var(--rSm);color:var(--tx);padding:9px 11px;font-size:15px;font-family:inherit;width:100%;outline:none;-webkit-appearance:none}
+input:focus,textarea:focus{border-color:var(--acc)}
+button{cursor:pointer;font-family:inherit;border:none;outline:none}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 12px;border-radius:var(--rSm);font-size:13px;border:0.5px solid var(--bdr);background:transparent;color:var(--txS);transition:opacity .15s}
+.btn:active{opacity:.7}
+.btn-accent{background:var(--acc);color:#1A1A1A;font-weight:700;border:none;padding:9px 18px;font-size:14px}
+.btn-danger{background:var(--redBg);color:var(--red);border-color:var(--red)}
+.btn-sm{padding:5px 9px;font-size:12px}
+.card{background:var(--bgR);border:0.5px solid var(--bdr);border-radius:var(--r)}
+.card.warn-card{border-color:var(--warn)}
+h1,h2,h3{font-weight:600}
+.tag{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;background:var(--bgS);color:var(--txT);border:0.5px solid var(--bdr)}
+/* HEADER */
+#app-header{position:sticky;top:0;background:var(--bg);border-bottom:0.5px solid var(--bdr);padding:10px 14px;display:flex;justify-content:space-between;align-items:center;z-index:100}
+.nav-tabs{display:flex;gap:5px}
+.nav-tab{padding:7px 11px;border-radius:var(--rSm);border:0.5px solid var(--bdr);background:transparent;color:var(--txS);font-size:13px;font-weight:500;display:flex;align-items:center;gap:5px}
+.nav-tab.active{border-color:var(--acc);background:var(--accBg);color:var(--accTx)}
+/* SCROLLING PILL ROWS */
+.pill-row{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.pill-row::-webkit-scrollbar{display:none}
+.pill{flex-shrink:0;padding:6px 13px;border-radius:20px;border:0.5px solid var(--bdr);background:transparent;color:var(--txT);font-size:12px;cursor:pointer}
+.pill.active{border-color:var(--acc);background:var(--accBg);color:var(--accTx)}
+/* EXERCISE CARDS */
+.ex-card{background:var(--bgR);border:0.5px solid var(--bdr);border-radius:var(--r);overflow:hidden;margin-bottom:9px}
+.ex-card.elbow-card{border-color:var(--warn)}
+.ex-header{width:100%;display:flex;align-items:center;justify-content:space-between;padding:13px 14px;background:transparent;border:none;color:var(--tx);text-align:left;cursor:pointer}
+.ex-body{padding:0 14px 14px;display:none}
+.ex-body.open{display:block}
+.set-row{display:grid;grid-template-columns:28px 1fr 1fr;gap:7px;align-items:center;margin-bottom:7px}
+.set-num{font-size:12px;color:var(--txT)}
+/* MODALS */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:flex;align-items:flex-end;justify-content:center}
+.modal{background:var(--bgR);border-radius:16px 16px 0 0;width:100%;max-width:680px;max-height:88vh;display:flex;flex-direction:column}
+.modal-head{padding:14px 16px 8px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.modal-body{overflow-y:auto;padding:0 16px 20px;flex:1}
+/* SEARCH */
+.search-bar{display:flex;align-items:center;gap:8px;background:var(--bgS);border-radius:var(--rSm);padding:9px 12px;margin-bottom:10px}
+.search-bar input{background:transparent;border:none;font-size:14px;flex:1;padding:0}
+.ex-list-item{display:flex;justify-content:space-between;align-items:center;padding:10px 11px;background:var(--bgS);border-radius:var(--rSm);margin-bottom:5px;cursor:pointer;border:none;width:100%;text-align:left;color:var(--tx)}
+.ex-list-item:active{opacity:.7}
+/* INFO/GUIDE */
+.info-section{margin-bottom:14px}
+.info-section .info-title{display:flex;align-items:center;gap:7px;margin-bottom:7px;font-weight:600;font-size:14px}
+.info-section p{font-size:13px;color:var(--txS);line-height:1.7;margin-bottom:6px}
+/* MISC */
+.chip{font-size:11px;color:var(--txT);background:var(--bgS);padding:3px 8px;border-radius:20px}
+.row-flex{display:flex;align-items:center;gap:8px}
+.spacer{flex:1}
+hr.dim{border:none;border-top:0.5px solid var(--bdr);margin:10px 0}
+#toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--ok);color:#fff;padding:8px 18px;border-radius:20px;font-size:13px;font-weight:600;opacity:0;transition:opacity .3s;pointer-events:none;z-index:500}
+</style>
+</head>
+<body>
+<div id="toast"></div>
+<div id="app-header">
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showView('log')" id="tab-log">🏋 <span id="lbl-log">Log</span></button>
+    <button class="nav-tab" onclick="showView('guide')" id="tab-guide">📖 <span id="lbl-guide">Guide</span></button>
+    <button class="nav-tab" onclick="showView('programs')" id="tab-programs">⚙️ <span id="lbl-programs">Programs</span></button>
+  </div>
+  <button class="btn btn-sm" onclick="toggleLang()" id="lang-btn">Suomi</button>
+</div>
+<div id="main" style="padding:14px;max-width:680px;margin:0 auto"></div>
+
+<!-- Exercise Search Modal -->
+<div id="search-modal" class="modal-overlay" style="display:none">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="modal-title" style="font-size:15px">Add Exercise</h3>
+      <button class="btn btn-sm" onclick="closeSearchModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="search-bar">
+        <span style="color:var(--txT)">🔍</span>
+        <input type="text" id="ex-search-input" placeholder="Search exercises…" oninput="renderExList()"/>
+      </div>
+      <div class="pill-row" id="muscle-filter" style="margin-bottom:10px"></div>
+      <div id="ex-list"></div>
+      <hr class="dim"/>
+      <p style="font-size:12px;color:var(--txT);margin-bottom:7px" id="lbl-custom-ex">Custom exercise name</p>
+      <div class="row-flex">
+        <input type="text" id="custom-ex-input" placeholder="e.g. Cable Rope Hammer Curl"/>
+        <button class="btn btn-accent" style="flex-shrink:0;font-size:13px;padding:8px 13px" onclick="addCustomEx()" id="btn-add-custom">Add</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Exercise Modal -->
+<div id="edit-modal" class="modal-overlay" style="display:none">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 style="font-size:15px" id="edit-modal-title">Edit Exercise</h3>
+      <button class="btn btn-sm" onclick="closeEditModal()">✕</button>
+    </div>
+    <div class="modal-body" id="edit-modal-body"></div>
+  </div>
+</div>
+
+<script>
+//── DATA ────────────────────────────────────────────────────────────────────
+const MUSCLES = ["Chest","Back","Shoulders","Biceps","Triceps","Quads","Hamstrings","Glutes","Calves","Core","Forearms","Traps","Full Body"];
+
+const EXERCISE_DB = [
+  // CHEST
+  {id:"bench_bar",name:"Bench Press (Barbell)",muscle:"Chest"},
+  {id:"bench_db",name:"Bench Press (Dumbbell)",muscle:"Chest"},
+  {id:"bench_smith",name:"Bench Press (Smith Machine)",muscle:"Chest"},
+  {id:"incline_bar",name:"Incline Press (Barbell)",muscle:"Chest"},
+  {id:"incline_db",name:"Incline Press (Dumbbell)",muscle:"Chest"},
+  {id:"incline_machine",name:"Incline Press (Machine)",muscle:"Chest"},
+  {id:"decline_bar",name:"Decline Press (Barbell)",muscle:"Chest"},
+  {id:"decline_db",name:"Decline Press (Dumbbell)",muscle:"Chest"},
+  {id:"floor_press",name:"Floor Press",muscle:"Chest"},
+  {id:"pec_deck",name:"Pec Deck",muscle:"Chest",elbowFlag:true},
+  {id:"cable_fly_mid",name:"Cable Fly (Mid)",muscle:"Chest"},
+  {id:"cable_fly_low",name:"Cable Fly (Low to High)",muscle:"Chest"},
+  {id:"cable_fly_high",name:"Cable Fly (High to Low)",muscle:"Chest"},
+  {id:"db_fly",name:"Dumbbell Fly",muscle:"Chest"},
+  {id:"pushup",name:"Push-Up",muscle:"Chest"},
+  {id:"dip_chest",name:"Dip (Chest-focused)",muscle:"Chest"},
+  {id:"landmine_press",name:"Landmine Press",muscle:"Chest"},
+  // BACK
+  {id:"pulldown_under",name:"Lat Pulldown (Underhand)",muscle:"Back",elbowFlag:true},
+  {id:"pulldown_over",name:"Lat Pulldown (Overhand)",muscle:"Back",elbowFlag:true},
+  {id:"pulldown_neutral",name:"Lat Pulldown (Neutral Grip)",muscle:"Back"},
+  {id:"pulldown_straight",name:"Straight-Arm Pulldown",muscle:"Back"},
+  {id:"pullup_weighted",name:"Weighted Pull-Up",muscle:"Back"},
+  {id:"pullup_assisted",name:"Assisted Pull-Up",muscle:"Back"},
+  {id:"chinup",name:"Chin-Up",muscle:"Back"},
+  {id:"row_bar",name:"Barbell Row",muscle:"Back"},
+  {id:"row_db_1arm",name:"Single-Arm Dumbbell Row",muscle:"Back"},
+  {id:"row_tbar",name:"T-Bar Row (Supported)",muscle:"Back"},
+  {id:"row_cable",name:"Cable Row (Neutral Grip)",muscle:"Back"},
+  {id:"row_cable_wide",name:"Cable Row (Wide Grip)",muscle:"Back"},
+  {id:"row_machine",name:"Chest-Supported Row Machine",muscle:"Back"},
+  {id:"row_seal",name:"Seal Row",muscle:"Back"},
+  {id:"facepull",name:"Face Pull (Rope)",muscle:"Back"},
+  {id:"rack_pull",name:"Rack Pull",muscle:"Back"},
+  // SHOULDERS
+  {id:"ohp_bar",name:"Overhead Press (Barbell)",muscle:"Shoulders"},
+  {id:"ohp_db_seated",name:"Seated Dumbbell Press",muscle:"Shoulders"},
+  {id:"ohp_db_standing",name:"Standing Dumbbell Press",muscle:"Shoulders"},
+  {id:"ohp_machine",name:"Machine Shoulder Press",muscle:"Shoulders"},
+  {id:"lateral_db",name:"Lateral Raise (Dumbbell)",muscle:"Shoulders"},
+  {id:"lateral_cable",name:"Lateral Raise (Cable)",muscle:"Shoulders"},
+  {id:"lateral_machine",name:"Lateral Raise (Machine)",muscle:"Shoulders"},
+  {id:"rear_delt_fly",name:"Rear Delt Fly (Dumbbell)",muscle:"Shoulders"},
+  {id:"rear_delt_machine",name:"Rear Delt Fly (Machine)",muscle:"Shoulders"},
+  {id:"rear_delt_cable",name:"Rear Delt Cable Pull",muscle:"Shoulders"},
+  {id:"arnold_press",name:"Arnold Press",muscle:"Shoulders"},
+  {id:"landmine_ohp",name:"Landmine Press (Shoulder)",muscle:"Shoulders"},
+  // BICEPS
+  {id:"curl_bar",name:"Barbell Curl",muscle:"Biceps",elbowFlag:true},
+  {id:"curl_ez",name:"EZ-Bar Curl",muscle:"Biceps",elbowFlag:true},
+  {id:"curl_db",name:"Dumbbell Curl",muscle:"Biceps"},
+  {id:"curl_hammer",name:"Hammer Curl",muscle:"Biceps"},
+  {id:"curl_cable_under",name:"Cable Curl (Underhand)",muscle:"Biceps"},
+  {id:"curl_cable_rope",name:"Cable Curl (Rope)",muscle:"Biceps"},
+  {id:"curl_preacher",name:"Preacher Curl",muscle:"Biceps",elbowFlag:true},
+  {id:"curl_incline",name:"Incline Dumbbell Curl",muscle:"Biceps"},
+  {id:"curl_conc",name:"Concentration Curl",muscle:"Biceps"},
+  // TRICEPS
+  {id:"pushdown_rope",name:"Triceps Pushdown (Rope)",muscle:"Triceps"},
+  {id:"pushdown_bar",name:"Triceps Pushdown (Bar)",muscle:"Triceps"},
+  {id:"pushdown_1arm",name:"Triceps Pushdown (Single Arm)",muscle:"Triceps"},
+  {id:"overhead_ext_cable",name:"Overhead Extension (Cable)",muscle:"Triceps"},
+  {id:"overhead_ext_db",name:"Overhead Extension (Dumbbell)",muscle:"Triceps"},
+  {id:"skull_crusher",name:"Skull Crusher (Dumbbell)",muscle:"Triceps"},
+  {id:"skull_crusher_ez",name:"Skull Crusher (EZ-Bar)",muscle:"Triceps"},
+  {id:"dip_tri",name:"Dip (Triceps-focused)",muscle:"Triceps"},
+  {id:"dip_machine",name:"Dip Machine",muscle:"Triceps"},
+  {id:"kickback",name:"Triceps Kickback",muscle:"Triceps"},
+  {id:"cgbp",name:"Close-Grip Bench Press",muscle:"Triceps"},
+  // QUADS
+  {id:"squat_back",name:"Back Squat",muscle:"Quads"},
+  {id:"squat_front",name:"Front Squat",muscle:"Quads"},
+  {id:"squat_goblet",name:"Goblet Squat",muscle:"Quads"},
+  {id:"squat_hack",name:"Hack Squat",muscle:"Quads"},
+  {id:"squat_safety",name:"Safety Bar Squat",muscle:"Quads"},
+  {id:"squat_smith",name:"Smith Machine Squat",muscle:"Quads"},
+  {id:"leg_press",name:"Leg Press",muscle:"Quads"},
+  {id:"leg_ext",name:"Leg Extension",muscle:"Quads"},
+  {id:"lunge_walk",name:"Walking Lunge",muscle:"Quads"},
+  {id:"split_squat",name:"Bulgarian Split Squat",muscle:"Quads"},
+  // HAMSTRINGS
+  {id:"rdl",name:"Romanian Deadlift",muscle:"Hamstrings"},
+  {id:"dl_conv",name:"Conventional Deadlift",muscle:"Hamstrings",elbowFlag:true},
+  {id:"dl_trap",name:"Trap Bar Deadlift",muscle:"Hamstrings"},
+  {id:"ham_curl_lying",name:"Hamstring Curl (Lying)",muscle:"Hamstrings"},
+  {id:"ham_curl_seated",name:"Hamstring Curl (Seated)",muscle:"Hamstrings"},
+  {id:"ham_curl_standing",name:"Hamstring Curl (Standing)",muscle:"Hamstrings"},
+  {id:"good_morning",name:"Good Morning",muscle:"Hamstrings"},
+  {id:"nordic",name:"Nordic Curl",muscle:"Hamstrings"},
+  {id:"stiff_dl",name:"Stiff-Leg Deadlift",muscle:"Hamstrings"},
+  // GLUTES
+  {id:"hip_thrust",name:"Hip Thrust (Barbell)",muscle:"Glutes"},
+  {id:"glute_bridge",name:"Glute Bridge",muscle:"Glutes"},
+  {id:"cable_pull_through",name:"Cable Pull-Through",muscle:"Glutes"},
+  {id:"hip_abduction",name:"Hip Abduction Machine",muscle:"Glutes"},
+  {id:"sumo_dl",name:"Sumo Deadlift",muscle:"Glutes"},
+  // CALVES
+  {id:"calf_standing",name:"Standing Calf Raise",muscle:"Calves"},
+  {id:"calf_seated",name:"Seated Calf Raise",muscle:"Calves"},
+  {id:"calf_leg_press",name:"Calf Raise (Leg Press)",muscle:"Calves"},
+  // CORE
+  {id:"crunch_machine",name:"Crunch Machine",muscle:"Core"},
+  {id:"cable_crunch",name:"Cable Crunch",muscle:"Core"},
+  {id:"hanging_leg",name:"Hanging Leg Raise",muscle:"Core",elbowFlag:true},
+  {id:"ab_wheel",name:"Ab Wheel",muscle:"Core"},
+  {id:"pallof_press",name:"Pallof Press",muscle:"Core"},
+  {id:"plank",name:"Plank",muscle:"Core"},
+  {id:"decline_situp",name:"Decline Sit-Up",muscle:"Core"},
+  // FOREARMS
+  {id:"wrist_curl",name:"Wrist Curl",muscle:"Forearms"},
+  {id:"reverse_curl",name:"Reverse Curl",muscle:"Forearms"},
+  {id:"farmers_carry",name:"Farmer's Carry",muscle:"Forearms",elbowFlag:true},
+  // TRAPS
+  {id:"shrug_bar",name:"Barbell Shrug",muscle:"Traps"},
+  {id:"shrug_db",name:"Dumbbell Shrug",muscle:"Traps"},
+  {id:"shrug_machine",name:"Machine Shrug",muscle:"Traps"},
+  // FULL BODY
+  {id:"clean",name:"Power Clean",muscle:"Full Body"},
+  {id:"snatch",name:"Snatch",muscle:"Full Body"},
+];
+
+const DEFAULT_PROGRAM = {
+  id:"default", name:"5-Day Strength",
+  days:[
+    {id:"push",label:"Push",subEn:"Chest · Shoulders · Triceps",subFi:"Rinta · Olkapäät · Ojentajat",exercises:[
+      {id:"bench_bar",sets:3,repRange:"3-5",target:90,elbowFlag:false,cueEn:"Elbows 45-75° from torso",cueFi:"Kyynärpäät 45-75° vartalosta"},
+      {id:"incline_db",sets:3,repRange:"6-8",target:32,elbowFlag:false,cueEn:"30-45° incline, controlled eccentric",cueFi:"30-45° kallistus"},
+      {id:"ohp_bar",sets:3,repRange:"4-6",target:45,elbowFlag:false,cueEn:"Do before incline if fatigued",cueFi:"Tee ennen vinopenkkiä jos mahdollista"},
+      {id:"lateral_db",sets:3,repRange:"12-15",target:10,elbowFlag:false},
+      {id:"pec_deck",sets:3,repRange:"10-12",target:72,elbowFlag:true,cueEn:"Stop short of full stretch if elbow flares",cueFi:"Pysähdy ennen täyttä venytystä jos kyynärpää oireilee"},
+      {id:"pushdown_bar",sets:3,repRange:"8-12",target:70,elbowFlag:false},
+      {id:"pushdown_1arm",sets:2,repRange:"8-12",target:17,elbowFlag:false},
+    ]},
+    {id:"legs_quad",label:"Legs",subEn:"Quad-dominant",subFi:"Etureisipainotteinen",exercises:[
+      {id:"squat_back",sets:3,repRange:"3-5",target:107,elbowFlag:false,cueEn:"Brace hard before unracking",cueFi:"Jännitä ennen telineestä nostoa"},
+      {id:"rdl",sets:3,repRange:"5-7",target:100,elbowFlag:false,cueEn:"Use straps",cueFi:"Käytä vetoremmejä"},
+      {id:"leg_ext",sets:3,repRange:"8-12",target:100,elbowFlag:false},
+      {id:"calf_seated",sets:3,repRange:"10-15",target:40,elbowFlag:false,cueEn:"Full stretch at bottom. Watch for cramps",cueFi:"Täysi venytys alhaalla. Varo kramppia"},
+      {id:"crunch_machine",sets:3,repRange:"10-15",target:30,elbowFlag:false},
+    ]},
+    {id:"pull",label:"Pull",subEn:"Back · Rear Delts · Biceps",subFi:"Selkä · Takaolkapäät · Hauis",exercises:[
+      {id:"pulldown_under",sets:3,repRange:"6-10",target:82,elbowFlag:true,cueEn:"Underhand tolerated — fallback: neutral grip",cueFi:"Alaote siedetty — varavaihto: neutraali ote"},
+      {id:"row_tbar",sets:3,repRange:"5-8",target:47,elbowFlag:false},
+      {id:"row_machine",sets:3,repRange:"8-10",target:35,elbowFlag:false},
+      {id:"facepull",sets:3,repRange:"15",target:35,elbowFlag:false},
+      {id:"curl_hammer",sets:3,repRange:"10-12",target:14,elbowFlag:false,cueEn:"Drop a set if arms pre-fatigued",cueFi:"Jätä sarja pois jos kädet jo väsyneet"},
+    ]},
+    {id:"posterior",label:"Posterior",subEn:"Hinge + Front Squat",subFi:"Lantiosarana + Etukyykky",exercises:[
+      {id:"dl_conv",sets:3,repRange:"3-5",target:null,elbowFlag:true,cueEn:"Trap bar or straps + double-overhand. Avoid mixed grip",cueFi:"Trap bar tai remmit. Vältä ristiotetta"},
+      {id:"squat_front",sets:3,repRange:"5-7",target:null,elbowFlag:false,cueEn:"Sub goblet squat if front rack bothers elbow",cueFi:"Korvaa goblet-kyykyllä jos etuasento ärsyttää"},
+      {id:"hip_thrust",sets:3,repRange:"6-10",target:null,elbowFlag:false},
+      {id:"ham_curl_seated",sets:3,repRange:"8-12",target:null,elbowFlag:false},
+      {id:"hanging_leg",sets:3,repRange:"10-15",target:null,elbowFlag:true,cueEn:"Switch to cable crunch if grip bothers elbow",cueFi:"Vaihda taljarutistukseen jos ote ärsyttää"},
+    ]},
+    {id:"arms_delts",label:"Arms/Delts",subEn:"Lower fatigue day",subFi:"Kevyempi kuormituspäivä",exercises:[
+      {id:"ohp_db_seated",sets:3,repRange:"6-10",target:24,elbowFlag:false},
+      {id:"lateral_cable",sets:3,repRange:"12-15",target:10,elbowFlag:false},
+      {id:"facepull",sets:3,repRange:"15",target:35,elbowFlag:false},
+      {id:"pushdown_rope",sets:3,repRange:"12-15",target:60,elbowFlag:false},
+      {id:"curl_hammer",sets:3,repRange:"12",target:14,elbowFlag:false},
+      {id:"skull_crusher",sets:3,repRange:"9-10",target:10,elbowFlag:false},
+      {id:"curl_cable_rope",sets:3,repRange:"15-18",target:25,elbowFlag:false,cueEn:"Straps fine once grip fatigues",cueFi:"Remmit ok kun ote väsyy"},
+    ]},
+  ]
+};
+
+//── STATE ───────────────────────────────────────────────────────────────────
+let lang = "en";
+let view = "log";
+let programs = [JSON.parse(JSON.stringify(DEFAULT_PROGRAM))];
+let activeProgId = "default";
+let activeDayId = "push";
+let history = {};
+let openExId = null;
+let swapOpenId = null;
+let elbowFlagged = {};
+let searchModalTarget = null; // {progId, dayId}
+let editModalTarget = null;   // {progId, dayId, exIdx}
+let muscleFilter = "All";
+let editingProgram = null;
+
+//── TRANSLATIONS ─────────────────────────────────────────────────────────────
+const T = {
+  en:{
+    log:"Log",guide:"Guide",programs:"Programs",
+    loading:"Loading…",resetDay:"Reset day",
+    of:(n,t)=>`${n}/${t} logged`,
+    reps:"reps",sets:"sets",target:"target",
+    lastTime:(d)=>`Last: ${d}`,
+    flagElbow:"Flag elbow",elbowFlagged:"Elbow ⚠",
+    save:"Save",footer:"Data saved on this device.",
+    lang:"Suomi",swapMove:"Swap",changeSwap:"Change swap",
+    orOwn:"Type your own…",use:"Use",revertTo:(n)=>`Revert to ${n}`,
+    myPrograms:"My Programs",newProgram:"New program",
+    addDay:"Add day",addExercise:"Add exercise",
+    setsLbl:"Sets",repsLbl:"Rep range",targetLbl:"Target (kg)",
+    cueLbl:"Form cue",elbowLbl:"Elbow-sensitive",
+    searchEx:"Search exercises…",customEx:"Custom exercise name",
+    addCustom:"Add custom",all:"All",
+    exportTitle:"Export — copy this code and save it",
+    importTitle:"Import — paste code below",
+    importBtn:"Load",importOk:"✓ Loaded!",importErr:"✗ Invalid code",
+    copyCode:"Copy",copied:"Copied!",
+    deleteDay:"Delete day",deleteEx:"Remove",
+    autoWeight:"💡 Auto-filled from last session",
+    progTitle:"Progression rule",
+    progBody:"Once all working sets hit the TOP of the rep range with good form → add weight. Compounds: +2.5–5 kg. Accessories: +2.5 kg. Drop back to bottom of rep range, rebuild.",
+    progStall:"Stalled 2 sessions → deload 10%, rebuild.",
+    progIso:"Isolation: add reps first, then weight.",
+    rirTitle:"Effort level (RIR)",
+    rirBody:"Stop 1–3 reps short of failure (RIR 1–3). Same muscle growth, fresher for next set. On strength work, leaving a rep in the tank protects strength better than going to zero.",
+    elbowTitle:"Elbow rule (golfer's elbow)",
+    elbowBody:"Up to 4–5/10 discomfort is OK if it settles within 24h and doesn't disrupt sleep. Trending worse → drop load or swap immediately.",
+    flareTitle:"Flare-up protocol",
+    flareBody:"5 × 30–45 sec isometric holds at ~70% effort. Reduces pain up to 45 min. Not a fix, but makes the session manageable.",
+    warmPush:"Push: band pull-aparts ×15, arm circles ×10, scap push-ups ×10, 2–3 ramp-up sets.",
+    warmLegs:"Legs: BW squats ×15, leg swings ×10/side, lunges ×10, bar + ramp-up sets.",
+    warmPull:"Pull: band pull-aparts ×15, scap retractions ×10, cat-cow ×10, light row sets.",
+    cooldown:"Cool-down: 5–8 min static stretching, 30 sec/side. Forearm flexor stretch in pain-free range only.",
+    cancel:"Cancel",saveProg:"Save program",
+    editEx:"Edit",active:"Active ✓",use:"Use",
+    importExport:"Save / Load data",
+  },
+  fi:{
+    log:"Kirjaus",guide:"Ohje",programs:"Ohjelmat",
+    loading:"Ladataan…",resetDay:"Tyhjennä päivä",
+    of:(n,t)=>`${n}/${t} kirjattu`,
+    reps:"toistoa",sets:"sarjaa",target:"tavoite",
+    lastTime:(d)=>`Viimeksi: ${d}`,
+    flagElbow:"Kyynärpää",elbowFlagged:"Kyynärpää ⚠",
+    save:"Tallenna",footer:"Data tallennettu tälle laitteelle.",
+    lang:"English",swapMove:"Vaihda",changeSwap:"Muuta",
+    orOwn:"Kirjoita oma…",use:"Käytä",revertTo:(n)=>`Palauta: ${n}`,
+    myPrograms:"Omat ohjelmat",newProgram:"Uusi ohjelma",
+    addDay:"Lisää päivä",addExercise:"Lisää liike",
+    setsLbl:"Sarjat",repsLbl:"Toistohaarukka",targetLbl:"Tavoitepaino (kg)",
+    cueLbl:"Tekniikkavihje",elbowLbl:"Kyynärpääherkkä",
+    searchEx:"Hae liikkeitä…",customEx:"Oma liikkeen nimi",
+    addCustom:"Lisää oma",all:"Kaikki",
+    exportTitle:"Vie — kopioi tämä koodi ja tallenna se",
+    importTitle:"Tuo — liitä koodi alle",
+    importBtn:"Lataa",importOk:"✓ Ladattu!",importErr:"✗ Virheellinen koodi",
+    copyCode:"Kopioi",copied:"Kopioitu!",
+    deleteDay:"Poista päivä",deleteEx:"Poista",
+    autoWeight:"💡 Täytetty viime kirjauksesta",
+    progTitle:"Progressiosääntö",
+    progBody:"Kun kaikki työsarjat saavuttavat toistohaarukan YLÄPÄÄN → lisää painoa. Perusliikkeet: +2,5–5 kg. Lisäliikkeet: +2,5 kg. Palaa haarukan alapäähän.",
+    progStall:"Jumittunut 2 kertaa → kevennä 10%, rakenna uudelleen.",
+    progIso:"Eristävät: ensin toistoja, sitten painoa.",
+    rirTitle:"Tehotaso (RIR)",
+    rirBody:"Jätä 1–3 toistoa varaan (RIR 1–3). Sama lihaskasvu, mutta tuoreempi. Voimaharjoittelussa tämä suojaa voimaa paremmin kuin nollaan meneminen.",
+    elbowTitle:"Kyynärpääsääntö",
+    elbowBody:"4–5/10 kipu ok jos rauhoittuu vuorokaudessa. Pahenee kerta kerralta → vähennä kuormaa tai vaihda liike.",
+    flareTitle:"Ärsytyksen rauhoittaminen",
+    flareBody:"5 × 30–45 sek isometrinen pito ~70 % teholla. Vähentää kipua jopa 45 min.",
+    warmPush:"Työntö: kuminauhavedot ×15, käsien pyöritys ×10, lapaluu-punnerrukset ×10, 2–3 lämmittelysarjaa.",
+    warmLegs:"Jalat: OKP-kyykyt ×15, jalan heilautukset ×10/puoli, kävelykäynnit ×10, tanko + lämmittelysarjat.",
+    warmPull:"Veto: kuminauhavedot ×15, lapaluiden vedot ×10, cat-cow ×10, kevyt soutu.",
+    cooldown:"Jäähdyttely: 5–8 min staattista venyttelyä, 30 sek/puoli. Koukistajien venytys vain kivuttomalla alueella.",
+    cancel:"Peruuta",saveProg:"Tallenna ohjelma",
+    editEx:"Muokkaa",active:"Aktiivinen ✓",use:"Käytä",
+    importExport:"Tallenna / Lataa data",
+  }
+};
+const t = () => T[lang];
+
+//── STORAGE ─────────────────────────────────────────────────────────────────
+const LS = {
+  get:(k)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):null}catch{return null}},
+  set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}},
+};
+
+function loadAll() {
+  const saved = LS.get("gymtracker_v4");
+  if (saved) {
+    if (saved.lang) lang = saved.lang;
+    if (saved.programs) programs = saved.programs;
+    if (saved.activeProgId) activeProgId = saved.activeProgId;
+    if (saved.activeDayId) activeDayId = saved.activeDayId;
+    if (saved.history) history = saved.history;
+  }
+  // Ensure default program always exists
+  if (!programs.find(p => p.id === "default")) {
+    programs.unshift(JSON.parse(JSON.stringify(DEFAULT_PROGRAM)));
+  }
+}
+
+function saveAll() {
+  LS.set("gymtracker_v4", { lang, programs, activeProgId, activeDayId, history });
+}
+
+//── LOG DATA ─────────────────────────────────────────────────────────────────
+function todayStr() { return new Date().toISOString().slice(0,10); }
+function logKey(progId, dayId) { return `gymlog_v4_${progId}_${dayId}_${todayStr()}`; }
+
+function getLog(progId, dayId) {
+  return LS.get(logKey(progId, dayId)) || {};
+}
+function setLog(progId, dayId, data) {
+  LS.set(logKey(progId, dayId), data);
+}
+
+function getHistory(progId, dayId, exId) {
+  return history?.[progId]?.[dayId]?.[exId] || null;
+}
+
+function saveHistory(progId, dayId, exId, entry) {
+  if (!history[progId]) history[progId] = {};
+  if (!history[progId][dayId]) history[progId][dayId] = {};
+  history[progId][dayId][exId] = entry;
+  saveAll();
+}
+
+//── HELPERS ─────────────────────────────────────────────────────────────────
+function uid() { return Math.random().toString(36).slice(2,9); }
+function activeProgram() { return programs.find(p => p.id === activeProgId) || programs[0]; }
+function activeDay() { const p = activeProgram(); return p?.days?.find(d => d.id === activeDayId) || p?.days?.[0]; }
+function exDisplayName(ex) {
+  if (ex.customName) return ex.customName;
+  const db = EXERCISE_DB.find(e => e.id === ex.id);
+  return db ? db.name : ex.id;
+}
+
+function getAutoTarget(progId, dayId, exId) {
+  const h = getHistory(progId, dayId, exId);
+  if (!h || !h.sets || !h.sets.length) return null;
+  const weights = h.sets.map(s => parseFloat(s.weight)).filter(w => !isNaN(w) && w > 0);
+  return weights.length ? Math.max(...weights) : null;
+}
+
+function toast(msg) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.style.opacity = "1";
+  setTimeout(() => el.style.opacity = "0", 2000);
+}
+
+//── VIEWS ───────────────────────────────────────────────────────────────────
+function showView(v) {
+  view = v;
+  document.querySelectorAll(".nav-tab").forEach(el => el.classList.remove("active"));
+  document.getElementById("tab-" + v).classList.add("active");
+  openExId = null; swapOpenId = null;
+  render();
+}
+
+function toggleLang() {
+  lang = lang === "en" ? "fi" : "en";
+  saveAll();
+  render();
+}
+
+//── RENDER ──────────────────────────────────────────────────────────────────
+function render() {
+  const main = document.getElementById("main");
+  // Update nav labels
+  document.getElementById("lbl-log").textContent = t().log;
+  document.getElementById("lbl-guide").textContent = t().guide;
+  document.getElementById("lbl-programs").textContent = t().programs;
+  document.getElementById("lang-btn").textContent = t().lang;
+
+  if (view === "log") main.innerHTML = renderLog();
+  else if (view === "guide") main.innerHTML = renderGuide();
+  else if (view === "programs") main.innerHTML = renderPrograms();
+  attachEventListeners();
+}
+
+//── LOG VIEW ─────────────────────────────────────────────────────────────────
+function renderLog() {
+  const prog = activeProgram();
+  const day = activeDay();
+  const logData = getLog(prog.id, activeDayId);
+  const ef = elbowFlagged;
+
+  let html = "";
+
+  // Program selector (if multiple programs)
+  if (programs.length > 1) {
+    html += `<div class="pill-row" style="margin-bottom:12px">`;
+    programs.forEach(p => {
+      html += `<button class="pill ${p.id === activeProgId ? "active" : ""}" onclick="selectProg('${p.id}')">${esc(p.name)}</button>`;
+    });
+    html += `</div>`;
+  }
+
+  if (!prog || !day) return `<p style="color:var(--txT)">No program selected.</p>`;
+
+  // Day tabs
+  html += `<div class="pill-row" style="margin-bottom:12px">`;
+  prog.days.forEach(d => {
+    html += `<button class="pill ${d.id === activeDayId ? "active" : ""}" onclick="selectDay('${d.id}')">${esc(d.label)}</button>`;
+  });
+  html += `</div>`;
+
+  // Header
+  const loggedCount = day.exercises.filter(ex => {
+    const sets = logData[ex.id] || [];
+    return sets.some(s => s && s.weight);
+  }).length;
+  html += `<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px">
+    <div>
+      <p style="font-size:13px;color:var(--txS);margin:0">${esc(lang==="fi"?(day.subFi||day.subEn):day.subEn)}</p>
+      <p style="font-size:12px;color:var(--txT);margin:2px 0 0">${t().of(loggedCount, day.exercises.length)}</p>
+    </div>
+    <button class="btn btn-sm" onclick="resetDay()">${t().resetDay}</button>
+  </div>`;
+
+  // Exercises
+  day.exercises.forEach((ex, ei) => {
+    const isOpen = openExId === ex.id + ei;
+    const isElbow = ex.elbowFlag || !!(EXERCISE_DB.find(e=>e.id===ex.id)?.elbowFlag);
+    const isFlagged = !!ef[ex.id + ei];
+    const displayName = exDisplayName(ex);
+    const sets = logData[ex.id] || Array(ex.sets).fill({weight:"",reps:""});
+    const hasLogged = sets.some(s => s && s.weight);
+    const hist = getHistory(prog.id, activeDayId, ex.id);
+    const autoTarget = getAutoTarget(prog.id, activeDayId, ex.id);
+    const cue = lang === "fi" ? (ex.cueFi || ex.cueEn || "") : (ex.cueEn || "");
+    const swapOpen = swapOpenId === ex.id + ei;
+    const swapName = ex._swap || "";
+
+    html += `<div class="ex-card ${isElbow && isFlagged ? "elbow-card" : ""}">`;
+    html += `<button class="ex-header" onclick="toggleEx('${ex.id + ei}')">
+      <div style="display:flex;align-items:center;gap:8px;min-width:0">
+        ${hasLogged ? `<span style="color:var(--ok);flex-shrink:0">✓</span>` : ""}
+        <div style="min-width:0">
+          <p style="font-size:14px;font-weight:600;margin:0;color:${isElbow?"var(--warn)":"var(--tx)"}">${esc(swapName || displayName)}</p>
+          <p style="font-size:11px;color:var(--txT);margin:2px 0 0">
+            ${swapName ? `<span>swapped · </span>` : ""}
+            ${ex.sets}×${ex.repRange} ${t().reps}
+            ${ex.target != null ? ` · ~${ex.target}kg` : (autoTarget ? ` · ~${autoTarget}kg` : "")}
+          </p>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+        ${isElbow ? `<span style="color:var(--warn);font-size:13px">⚠</span>` : ""}
+        <span style="color:var(--txT)">${isOpen ? "▲" : "▽"}</span>
+      </div>
+    </button>`;
+
+    if (isOpen) {
+      html += `<div class="ex-body open">`;
+
+      // Cue
+      if (cue) html += `<p style="font-size:12px;color:var(--txS);background:var(--bgS);padding:7px 10px;border-radius:7px;margin-bottom:10px">${esc(cue)}</p>`;
+
+      // Swap
+      html += `<div style="margin-bottom:10px">
+        <button class="btn btn-sm" onclick="toggleSwap('${ex.id + ei}')">${swapName ? t().changeSwap : t().swapMove}</button>`;
+      if (swapOpen) {
+        html += `<div style="margin-top:7px;background:var(--bgS);border-radius:8px;padding:10px 12px">`;
+        if (swapName) html += `<button onclick="doSwap('${ex.id + ei}','${ei}','${prog.id}','${activeDayId}','')" style="display:block;width:100%;text-align:left;background:none;border:none;color:var(--inf);font-size:13px;padding:4px 6px;cursor:pointer">${t().revertTo(esc(displayName))}</button>`;
+        (ex.altsEn || []).forEach(alt => {
+          html += `<button onclick="doSwap('${ex.id + ei}','${ei}','${prog.id}','${activeDayId}','${alt.replace(/'/g,"\\'")}')" style="display:block;width:100%;text-align:left;background:none;border:none;color:var(--tx);font-size:13px;padding:4px 6px;cursor:pointer">${esc(alt)}</button>`;
+        });
+        html += `<div style="display:flex;gap:6px;margin-top:6px">
+          <input type="text" id="swap-custom-${ei}" placeholder="${t().orOwn}" style="font-size:13px"/>
+          <button class="btn btn-sm" onclick="doSwapCustom('${ex.id + ei}','${ei}','${prog.id}','${activeDayId}')">${t().use}</button>
+        </div></div>`;
+      }
+      html += `</div>`;
+
+      // Last session
+      if (hist) {
+        html += `<p style="font-size:11px;color:var(--txT);margin:0 0 10px;display:flex;align-items:center;gap:4px">
+          📈 ${t().lastTime(hist.date)}: ${hist.sets.map(s=>`${s.weight}kg×${s.reps}`).join(", ")}
+        </p>`;
+      }
+
+      // Sets
+      for (let si = 0; si < ex.sets; si++) {
+        const setData = sets[si] || {weight:"",reps:""};
+        const ghostW = hist?.sets?.[si]?.weight || (autoTarget || "");
+        const ghostR = hist?.sets?.[si]?.reps || "";
+        html += `<div class="set-row">
+          <span class="set-num">#${si+1}</span>
+          <input type="number" inputmode="decimal" placeholder="${ghostW ? ghostW+"kg" : "kg"}" value="${setData.weight||""}" onchange="updateSet('${prog.id}','${activeDayId}','${ex.id}',${si},'weight',this.value)" onfocus="this.select()"/>
+          <input type="number" inputmode="numeric" placeholder="${ghostR ? ghostR : t().reps}" value="${setData.reps||""}" onchange="updateSet('${prog.id}','${activeDayId}','${ex.id}',${si},'reps',this.value)" onfocus="this.select()"/>
+        </div>`;
+      }
+
+      // Auto-weight hint
+      if (autoTarget && !hasLogged) {
+        html += `<p style="font-size:11px;color:var(--txT);margin:4px 0 10px">${t().autoWeight}: ${autoTarget}kg</p>`;
+      }
+
+      // Actions
+      html += `<div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;gap:8px">
+        <button class="btn btn-sm ${isFlagged ? "" : ""}" 
+          style="${isFlagged ? "color:var(--warn);background:var(--warnBg);border-color:var(--warn)" : ""}"
+          onclick="toggleElbowFlag('${ex.id + ei}')">${isFlagged ? t().elbowFlagged : t().flagElbow}</button>
+        <button class="btn btn-accent" style="padding:8px 16px;font-size:13px" onclick="saveExercise('${prog.id}','${activeDayId}','${ex.id}',${ei})">${t().save} ✓</button>
+      </div>`;
+
+      html += `</div>`; // ex-body
+    }
+    html += `</div>`; // ex-card
+  });
+
+  html += `<p style="font-size:11px;color:var(--txT);margin-top:16px;text-align:center">${t().footer}</p>`;
+  return html;
+}
+
+//── GUIDE VIEW ───────────────────────────────────────────────────────────────
+function renderGuide() {
+  const tx = t();
+  return `
+  <div style="display:flex;flex-direction:column;gap:13px">
+    <div class="card" style="padding:15px">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:8px"><span style="color:var(--accTx);font-size:16px">📈</span><strong style="font-size:14px">${tx.progTitle}</strong></div>
+      <p style="font-size:13px;color:var(--txS);line-height:1.7;margin-bottom:7px">${tx.progBody}</p>
+      <p style="font-size:13px;color:var(--txS);line-height:1.7;margin-bottom:7px">${tx.progStall}</p>
+      <p style="font-size:13px;color:var(--txS);line-height:1.7">${tx.progIso}</p>
+    </div>
+    <div class="card" style="padding:15px">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:8px"><span style="color:var(--inf);font-size:16px">🎯</span><strong style="font-size:14px">${tx.rirTitle}</strong></div>
+      <p style="font-size:13px;color:var(--txS);line-height:1.7">${tx.rirBody}</p>
+    </div>
+    <div class="card warn-card" style="padding:15px;background:var(--warnBg)">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:8px"><span style="font-size:16px">⚠️</span><strong style="font-size:14px;color:var(--warn)">${tx.elbowTitle}</strong></div>
+      <p style="font-size:13px;color:var(--tx);line-height:1.7">${tx.elbowBody}</p>
+    </div>
+    <div class="card" style="padding:15px">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:8px"><span style="color:var(--acc);font-size:16px">🔥</span><strong style="font-size:14px">${tx.flareTitle}</strong></div>
+      <p style="font-size:13px;color:var(--txS);line-height:1.7">${tx.flareBody}</p>
+    </div>
+    <div class="card" style="padding:15px">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:10px"><span style="color:var(--accTx);font-size:16px">🔆</span><strong style="font-size:14px">Warm-up</strong></div>
+      <p style="font-weight:600;font-size:13px;margin-bottom:3px">Push</p>
+      <p style="font-size:13px;color:var(--txS);line-height:1.7;margin-bottom:9px">${tx.warmPush}</p>
+      <p style="font-weight:600;font-size:13px;margin-bottom:3px">Legs</p>
+      <p style="font-size:13px;color:var(--txS);line-height:1.7;margin-bottom:9px">${tx.warmLegs}</p>
+      <p style="font-weight:600;font-size:13px;margin-bottom:3px">Pull</p>
+      <p style="font-size:13px;color:var(--txS);line-height:1.7">${tx.warmPull}</p>
+    </div>
+    <div class="card" style="padding:15px">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:8px"><span style="color:var(--txS);font-size:16px">🌬</span><strong style="font-size:14px">Cool-down</strong></div>
+      <p style="font-size:13px;color:var(--txS);line-height:1.7">${tx.cooldown}</p>
+    </div>
+  </div>`;
+}
+
+//── PROGRAMS VIEW ─────────────────────────────────────────────────────────────
+function renderPrograms() {
+  const tx = t();
+  let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+    <h2 style="font-size:16px">${tx.myPrograms}</h2>
+    <button class="btn btn-accent" style="font-size:13px;padding:8px 14px" onclick="newProgram()">+ ${tx.newProgram}</button>
+  </div>`;
+
+  programs.forEach(prog => {
+    const isActive = prog.id === activeProgId;
+    html += `<div class="card" style="margin-bottom:10px;padding:14px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        <div>
+          <p style="font-weight:700;font-size:14px;margin:0">${esc(prog.name)}</p>
+          <p style="font-size:12px;color:var(--txT);margin:2px 0 0">${prog.days.length} ${tx.addDay.toLowerCase()}s · ${prog.days.reduce((s,d)=>s+d.exercises.length,0)} exercises</p>
+        </div>
+        <div style="display:flex;gap:6px;flex-shrink:0">
+          ${prog.id !== "default" ? `<button class="btn btn-sm" onclick="editProgramPrompt('${prog.id}')">✏️</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteProg('${prog.id}')">🗑</button>` : ""}
+          <button class="btn btn-sm ${isActive?"btn-accent":""}" onclick="selectProg('${prog.id}');showView('log')">${isActive ? tx.active : tx.use}</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:5px;flex-wrap:wrap">
+        ${prog.days.map(d=>`<span class="chip">${esc(d.label)}</span>`).join("")}
+      </div>
+    </div>`;
+  });
+
+  // Save / Load section
+  const exportData = JSON.stringify({programs:programs.filter(p=>p.id!=="default"),history,v:4});
+  html += `<div class="card" style="margin-top:10px;padding:14px">
+    <p style="font-weight:600;font-size:14px;margin-bottom:10px">💾 ${tx.importExport}</p>
+    <p style="font-size:12px;color:var(--txT);margin-bottom:6px">${tx.exportTitle}</p>
+    <div style="background:var(--bgS);border-radius:8px;padding:9px;font-size:11px;color:var(--txT);font-family:monospace;word-break:break-all;max-height:70px;overflow:hidden;margin-bottom:8px">${exportData.slice(0,300)}…</div>
+    <button class="btn btn-sm" onclick="copyExport()" id="copy-btn">${tx.copyCode}</button>
+    <hr class="dim" style="margin:12px 0"/>
+    <p style="font-size:12px;color:var(--txT);margin-bottom:6px">${tx.importTitle}</p>
+    <textarea id="import-input" rows="3" style="width:100%;font-family:monospace;font-size:12px;resize:vertical;margin-bottom:8px" placeholder="Paste code here…"></textarea>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="btn btn-sm btn-accent" onclick="doImport()">${tx.importBtn}</button>
+      <span id="import-msg" style="font-size:12px"></span>
+    </div>
+  </div>`;
+
+  return html;
+}
+
+//── PROGRAM EDITOR ────────────────────────────────────────────────────────────
+function newProgram() {
+  editingProgram = { id: uid(), name: "", days: [] };
+  renderProgramEditor();
+}
+
+function editProgramPrompt(progId) {
+  editingProgram = JSON.parse(JSON.stringify(programs.find(p => p.id === progId)));
+  renderProgramEditor();
+}
+
+function renderProgramEditor() {
+  const prog = editingProgram;
+  const tx = t();
+  let html = `
+    <div style="margin-bottom:12px">
+      <input type="text" id="prog-name-input" value="${esc(prog.name)}" placeholder="${tx.programName}" style="font-size:15px;font-weight:700"/>
+    </div>`;
+
+  prog.days.forEach((day, di) => {
+    html += `<div class="card" style="margin-bottom:10px;overflow:hidden">
+      <div style="padding:10px 13px;background:var(--bgS);display:flex;gap:8px;align-items:center">
+        <input type="text" value="${esc(day.label)}" oninput="editorUpdateDayLabel(${di},this.value)" style="flex:1;font-weight:700;background:transparent;border:none;color:var(--tx);font-size:14px"/>
+        <button class="btn btn-sm btn-danger" onclick="editorRemoveDay(${di})">🗑</button>
+      </div>
+      <div style="padding:12px">`;
+
+    day.exercises.forEach((ex, ei) => {
+      const name = exDisplayName(ex);
+      html += `<div style="background:var(--bgS);border-radius:8px;padding:10px;margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">
+          <span style="font-size:13px;font-weight:600;color:${ex.elbowFlag?"var(--warn)":"var(--tx)"}>${ex.elbowFlag?"⚠ ":""}${esc(name)}</span>
+          <button class="btn btn-sm btn-danger" onclick="editorRemoveEx(${di},${ei})">✕</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:6px">
+          <div><label style="font-size:10px;color:var(--txT)">${tx.setsLbl}</label>
+            <input type="number" value="${ex.sets}" oninput="editorUpdateEx(${di},${ei},'sets',+this.value||1)" style="font-size:13px"/>
+          </div>
+          <div><label style="font-size:10px;color:var(--txT)">${tx.repsLbl}</label>
+            <input type="text" value="${esc(ex.repRange)}" oninput="editorUpdateEx(${di},${ei},'repRange',this.value)" style="font-size:13px"/>
+          </div>
+          <div><label style="font-size:10px;color:var(--txT)">${tx.targetLbl}</label>
+            <input type="number" value="${ex.target??""}" placeholder="—" oninput="editorUpdateEx(${di},${ei},'target',this.value?+this.value:null)" style="font-size:13px"/>
+          </div>
+        </div>
+        <input type="text" value="${esc(ex.cueEn||"")}" oninput="editorUpdateEx(${di},${ei},'cueEn',this.value)" placeholder="${tx.cueLbl}" style="font-size:12px;margin-bottom:5px"/>
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--txT);cursor:pointer">
+          <input type="checkbox" ${ex.elbowFlag?"checked":""} onchange="editorUpdateEx(${di},${ei},'elbowFlag',this.checked)"/> ${tx.elbowLbl}
+        </label>
+      </div>`;
+    });
+
+    html += `<button class="btn" style="width:100%;justify-content:center" onclick="openSearchModal('editor',${di})">🔍 ${tx.addExercise}</button>`;
+    html += `</div></div>`;
+  });
+
+  html += `<button class="btn" style="width:100%;justify-content:center;margin-bottom:12px" onclick="editorAddDay()">+ ${tx.addDay}</button>`;
+  html += `<div style="display:flex;gap:8px;justify-content:flex-end">
+    <button class="btn" onclick="cancelEditor()">${tx.cancel}</button>
+    <button class="btn btn-accent" onclick="saveEditor()">${tx.saveProg}</button>
+  </div>`;
+
+  document.getElementById("main").innerHTML = html;
+}
+
+function editorAddDay() {
+  editingProgram.days.push({ id: uid(), label: `Day ${editingProgram.days.length+1}`, subEn:"", subFi:"", exercises:[] });
+  renderProgramEditor();
+}
+function editorRemoveDay(di) { editingProgram.days.splice(di,1); renderProgramEditor(); }
+function editorUpdateDayLabel(di, val) { editingProgram.days[di].label = val; }
+function editorRemoveEx(di, ei) { editingProgram.days[di].exercises.splice(ei,1); renderProgramEditor(); }
+function editorUpdateEx(di, ei, field, val) { editingProgram.days[di].exercises[ei][field] = val; }
+function cancelEditor() { editingProgram = null; view = "programs"; render(); }
+function saveEditor() {
+  const nameInput = document.getElementById("prog-name-input");
+  editingProgram.name = nameInput ? nameInput.value.trim() || "My Program" : editingProgram.name || "My Program";
+  const idx = programs.findIndex(p => p.id === editingProgram.id);
+  if (idx >= 0) programs[idx] = editingProgram;
+  else programs.push(editingProgram);
+  editingProgram = null;
+  saveAll();
+  view = "programs";
+  render();
+}
+
+//── EXERCISE SEARCH MODAL ────────────────────────────────────────────────────
+let searchModalContext = null; // {mode:"editor"|"log", dayIdx, progId, dayId}
+
+function openSearchModal(mode, dayIdx, progId, dayId) {
+  searchModalContext = { mode, dayIdx, progId, dayId };
+  muscleFilter = "All";
+  document.getElementById("ex-search-input").value = "";
+  renderMuscleFilter();
+  renderExList();
+  document.getElementById("search-modal").style.display = "flex";
+  document.getElementById("ex-search-input").focus();
+}
+
+function closeSearchModal() {
+  document.getElementById("search-modal").style.display = "none";
+}
+
+function renderMuscleFilter() {
+  const row = document.getElementById("muscle-filter");
+  row.innerHTML = ["All", ...MUSCLES].map(m =>
+    `<button class="pill ${m === muscleFilter ? "active" : ""}" onclick="setMuscleFilter('${m}')">${m}</button>`
+  ).join("");
+}
+
+function setMuscleFilter(m) {
+  muscleFilter = m;
+  renderMuscleFilter();
+  renderExList();
+}
+
+function renderExList() {
+  const q = document.getElementById("ex-search-input").value.toLowerCase();
+  const filtered = EXERCISE_DB.filter(e =>
+    (muscleFilter === "All" || e.muscle === muscleFilter) &&
+    e.name.toLowerCase().includes(q)
+  );
+  document.getElementById("ex-list").innerHTML = filtered.map(ex =>
+    `<button class="ex-list-item" onclick="addExFromSearch('${ex.id}')">
+      <div>
+        <span style="font-size:14px">${esc(ex.name)}</span>
+        <span style="font-size:11px;color:var(--txT);margin-left:8px">${ex.muscle}</span>
+      </div>
+      ${ex.elbowFlag ? `<span style="color:var(--warn);font-size:13px">⚠</span>` : ""}
+    </button>`
+  ).join("");
+}
+
+function addExFromSearch(exId) {
+  const dbEx = EXERCISE_DB.find(e => e.id === exId);
+  const newEx = {
+    id: exId, sets: 3, repRange: "8-12", target: null,
+    elbowFlag: !!dbEx?.elbowFlag, cueEn: "", cueFi: ""
+  };
+  const ctx = searchModalContext;
+  if (ctx.mode === "editor" && editingProgram) {
+    editingProgram.days[ctx.dayIdx].exercises.push(newEx);
+    closeSearchModal();
+    renderProgramEditor();
+  }
+}
+
+function addCustomEx() {
+  const name = document.getElementById("custom-ex-input").value.trim();
+  if (!name) return;
+  const newEx = { id: uid(), customName: name, sets: 3, repRange: "8-12", target: null, elbowFlag: false, cueEn: "", cueFi: "" };
+  const ctx = searchModalContext;
+  if (ctx.mode === "editor" && editingProgram) {
+    editingProgram.days[ctx.dayIdx].exercises.push(newEx);
+    document.getElementById("custom-ex-input").value = "";
+    closeSearchModal();
+    renderProgramEditor();
+  }
+}
+
+//── LOG ACTIONS ──────────────────────────────────────────────────────────────
+function selectProg(id) {
+  activeProgId = id;
+  const prog = programs.find(p => p.id === id);
+  activeDayId = prog?.days?.[0]?.id || "";
+  openExId = null; swapOpenId = null;
+  saveAll();
+  render();
+}
+
+function selectDay(id) {
+  activeDayId = id;
+  openExId = null; swapOpenId = null;
+  saveAll();
+  render();
+}
+
+function toggleEx(key) {
+  openExId = openExId === key ? null : key;
+  swapOpenId = null;
+  render();
+}
+
+function toggleSwap(key) {
+  swapOpenId = swapOpenId === key ? null : key;
+  render();
+}
+
+function doSwap(key, ei, progId, dayId, name) {
+  const prog = programs.find(p => p.id === progId);
+  const day = prog?.days?.find(d => d.id === dayId);
+  if (!day) return;
+  const ex = day.exercises[ei];
+  if (!ex) return;
+  ex._swap = name || "";
+  swapOpenId = null;
+  saveAll();
+  render();
+}
+
+function doSwapCustom(key, ei, progId, dayId) {
+  const name = document.getElementById(`swap-custom-${ei}`)?.value?.trim();
+  if (name) doSwap(key, ei, progId, dayId, name);
+}
+
+function updateSet(progId, dayId, exId, si, field, val) {
+  const logData = getLog(progId, dayId);
+  const prog = programs.find(p => p.id === progId);
+  const day = prog?.days?.find(d => d.id === dayId);
+  const ex = day?.exercises?.find(e => e.id === exId);
+  if (!ex) return;
+  if (!logData[exId]) logData[exId] = Array(ex.sets).fill(null).map(()=>({weight:"",reps:""}));
+  if (!logData[exId][si]) logData[exId][si] = {weight:"",reps:""};
+  logData[exId][si][field] = val;
+  setLog(progId, dayId, logData);
+}
+
+function saveExercise(progId, dayId, exId, ei) {
+  const logData = getLog(progId, dayId);
+  const sets = (logData[exId] || []).filter(s => s && s.weight);
+  if (!sets.length) return;
+  // Auto-update target weight on the exercise itself
+  const prog = programs.find(p => p.id === progId);
+  const day = prog?.days?.find(d => d.id === dayId);
+  const ex = day?.exercises?.find(e => e.id === exId);
+  if (ex) {
+    const maxW = Math.max(...sets.map(s => parseFloat(s.weight)).filter(w => !isNaN(w)));
+    if (maxW > 0) ex.target = maxW;
+    saveAll();
+  }
+  saveHistory(progId, dayId, exId, { date: todayStr(), sets });
+  openExId = null;
+  toast("✓ Saved!");
+  render();
+}
+
+function toggleElbowFlag(key) {
+  elbowFlagged[key] = !elbowFlagged[key];
+  render();
+}
+
+function resetDay() {
+  const prog = activeProgram();
+  if (!prog) return;
+  setLog(prog.id, activeDayId, {});
+  render();
+}
+
+//── PROGRAM ACTIONS ──────────────────────────────────────────────────────────
+function deleteProg(id) {
+  if (!confirm(t().cancel + "?")) return;
+  programs = programs.filter(p => p.id !== id);
+  if (activeProgId === id) { activeProgId = "default"; activeDayId = programs[0]?.days?.[0]?.id || ""; }
+  saveAll();
+  render();
+}
+
+//── IMPORT / EXPORT ──────────────────────────────────────────────────────────
+function copyExport() {
+  const exportData = JSON.stringify({programs:programs.filter(p=>p.id!=="default"),history,v:4});
+  navigator.clipboard?.writeText(exportData).then(() => {
+    const btn = document.getElementById("copy-btn");
+    if (btn) { btn.textContent = t().copied; setTimeout(() => { btn.textContent = t().copyCode; }, 2000); }
+  });
+}
+
+function doImport() {
+  const val = document.getElementById("import-input")?.value?.trim();
+  const msg = document.getElementById("import-msg");
+  try {
+    const data = JSON.parse(val);
+    if (!data.v) throw new Error();
+    if (data.programs) {
+      programs = [JSON.parse(JSON.stringify(DEFAULT_PROGRAM)), ...data.programs];
+    }
+    if (data.history) history = data.history;
+    saveAll();
+    if (msg) { msg.style.color = "var(--ok)"; msg.textContent = t().importOk; }
+    render();
+  } catch(e) {
+    if (msg) { msg.style.color = "var(--red)"; msg.textContent = t().importErr; }
+  }
+}
+
+//── MISC ────────────────────────────────────────────────────────────────────
+function esc(str) {
+  if (!str) return "";
+  return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+function attachEventListeners() {
+  // Input events are inline in HTML, nothing extra needed
+}
+
+// BOOT
+try {
+  loadAll();
+  render();
+} catch(bootErr) {
+  document.getElementById("main").innerHTML =
+    '<div style="color:#E8743B;padding:20px;font-size:13px;background:#1D2024;border-radius:10px;margin-top:20px">' +
+    '<strong>Error (screenshot this):</strong><br/><br/>' +
+    bootErr.toString() + '<br/><br/>' + (bootErr.stack||"") + '</div>';
+}
+</script>
+</body>
+</html>
